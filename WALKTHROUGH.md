@@ -86,27 +86,9 @@ curl -X POST "http://127.0.0.1:8000/projects/999/targets" \
 ## 2. Command to Test Standalone
 ```bash
 cd backend
-python recon.py
+python3 recon.py
 ```
 
-## 3. Real Output Example (against hackerone.com)
-```text
-Running subfinder test on hackerone.com...
-Found 17 subdomains. Here are the first 10:
-mta-sts.managed.hackerone.com
-www.hackerone.com
-mta-sts.forwarding.hackerone.com
-mta-sts.hackerone.com
-websockets.hackerone.com
-hackerone.com
-a.ns.hackerone.com
-b.ns.hackerone.com
-events.hackerone.com
-gslink.hackerone.com
-```
-
-## 4. Error Cases and Testing
-- **Binary Missing:** Tested by renaming `subfinder.exe` to `subfinder.exe.bak` and running the script.
-  - *Resulting Error:* `Error: subfinder not found - ensure it's installed and on PATH`
-- **Non-Zero Exit / stderr Logging:** Handled by validating `result.returncode != 0`. The script captures `stderr` and displays it in the `RuntimeError`.
-- **Timeouts:** Simulated logic using `subprocess.run(timeout=60)`. If the subfinder command exceeds the specified timeout (default 60s), a `subprocess.TimeoutExpired` exception is caught, and a `RuntimeError` stating the exact timeout is raised.
+## 3. Verification Note
+> [!IMPORTANT]
+> This has not been executed - verification must happen on the Kali VM where subfinder is actually installed.
