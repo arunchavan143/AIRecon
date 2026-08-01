@@ -139,3 +139,63 @@ python3 -m recon.pipeline
 ## 3. Verification Note
 > [!IMPORTANT]
 > This has not been executed - verification must happen on the Kali VM.
+
+---
+
+# Sprint 6 (Part 2): Wiring Pipeline to DB API Endpoints
+
+## 1. What was built
+- Created Pydantic models `HostOut` and `ScanSummary` in `models.py` to type output structures.
+- Added `POST /targets/{target_id}/scan` to `main.py` which:
+  - Fetches the target domain from the DB.
+  - Calls `run_full_pipeline` to orchestrate recon tools synchronously.
+  - Upserts discovered host data into the `hosts` table matching by `(target_id, hostname)`. It updates existing hosts by refreshing their details and `last_seen` timestamp, or inserts newly found hosts.
+  - Captures `RuntimeError` from the pipeline tools (e.g. missing tools) and maps them to clean `HTTP 500` error responses to prevent application crashes.
+- Added `GET /targets/{target_id}/hosts` to `main.py` to list discovered hosts, featuring optional query filters for `alive` status and `tech` stack (using PostgreSQL's `ANY()` array matching).
+
+## 2. API Endpoints and `curl` Commands
+
+### Run a Scan (`POST /targets/{target_id}/scan`)
+```bash
+curl -X POST "http://127.0.0.1:8000/targets/1/scan"
+```
+**Expected Successful Response:**
+```json
+{
+  "target_id": 1,
+  "hosts_found": 45,
+  "hosts_new": 40,
+  "hosts_updated": 5
+}
+```
+
+### List Hosts (`GET /targets/{target_id}/hosts`)
+```bash
+# List all hosts
+curl -X GET "http://127.0.0.1:8000/targets/1/hosts"
+
+# Filter by alive status and specific technology
+curl -X GET "http://127.0.0.1:8000/targets/1/hosts?alive=true&tech=Nginx"
+```
+**Expected Successful Response:**
+```json
+[
+  {
+    "id": 1,
+    "target_id": 1,
+    "hostname": "api.acme.com",
+    "ip": "104.16.132.229",
+    "status_code": 200,
+    "title": "ACME API Docs",
+    "tech_stack": ["Nginx", "React"],
+    "server": "nginx",
+    "alive": true,
+    "first_seen": "2026-08-01T12:00:00",
+    "last_seen": "2026-08-01T12:30:00"
+  }
+]
+```
+
+## 3. Verification Note
+> [!IMPORTANT]
+> This has not been executed - verification must happen on the Kali VM.

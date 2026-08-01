@@ -3,7 +3,8 @@ from typing import List
 from psycopg2.extras import RealDictCursor
 
 from db import get_connection
-from models import ProjectCreate, ProjectOut, TargetCreate, TargetOut
+from models import ProjectCreate, ProjectOut, TargetCreate, TargetOut, HostOut, ScanSummary
+from recon.pipeline import run_full_pipeline
 
 app = FastAPI()
 
@@ -81,6 +82,107 @@ def list_targets(project_id: int):
             )
             targets = cur.fetchall()
             return targets
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+@app.post("/targets/{target_id}/scan", response_model=ScanSummary)
+def run_scan(target_id: int):
+    conn = get_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            # Look up target domain
+            cur.execute("SELECT domain FROM targets WHERE id = %s;", (target_id,))
+            target = cur.fetchone()
+            if not target:
+                raise HTTPException(status_code=404, detail="Target not found")
+            
+            domain = target['domain']
+            
+            # Run the recon pipeline
+            try:
+                results = run_full_pipeline(domain)
+            except RuntimeError as e:
+                raise HTTPException(status_code=500, detail=str(e))
+                
+            hosts_found = len(results)
+            hosts_new = 0
+            hosts_updated = 0
+            
+            # Upsert into hosts table
+            for res in results:
+                # PostgreSQL doesn't have arrays in standard %s syntax without adaptation,
+                # but psycopg2 handles Python lists gracefully when passed as %s
+                cur.execute(
+                    "SELECT id FROM hosts WHERE target_id = %s AND hostname = %s;",
+                    (target_id, res['hostname'])
+                )
+                existing_host = cur.fetchone()
+                
+                if existing_host:
+                    cur.execute(
+                        """
+                        UPDATE hosts
+                        SET ip = %s, status_code = %s, title = %s, tech_stack = %s, server = %s, alive = true, last_seen = now()
+                        WHERE id = %s;
+                        """,
+                        (res['ip'], res['status_code'], res['title'], res['tech'], res['server'], existing_host['id'])
+                    )
+                    hosts_updated += 1
+                else:
+                    cur.execute(
+                        """
+                        INSERT INTO hosts (target_id, hostname, ip, status_code, title, tech_stack, server, alive, first_seen, last_seen)
+                        VALUES (%s, %s, %s, %s, %s, %s, %s, true, now(), now());
+                        """,
+                        (target_id, res['hostname'], res['ip'], res['status_code'], res['title'], res['tech'], res['server'])
+                    )
+                    hosts_new += 1
+                    
+            conn.commit()
+            return {
+                "target_id": target_id,
+                "hosts_found": hosts_found,
+                "hosts_new": hosts_new,
+                "hosts_updated": hosts_updated
+            }
+            
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+@app.get("/targets/{target_id}/hosts", response_model=List[HostOut])
+def list_hosts(target_id: int, alive: bool = None, tech: str = None):
+    conn = get_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT id FROM targets WHERE id = %s;", (target_id,))
+            if cur.fetchone() is None:
+                raise HTTPException(status_code=404, detail="Target not found")
+            
+            query = "SELECT id, target_id, hostname, ip, status_code, title, tech_stack, server, alive, first_seen, last_seen FROM hosts WHERE target_id = %s"
+            params = [target_id]
+            
+            if alive is not None:
+                query += " AND alive = %s"
+                params.append(alive)
+                
+            if tech is not None:
+                query += " AND %s = ANY(tech_stack)"
+                params.append(tech)
+                
+            query += " ORDER BY hostname;"
+            
+            cur.execute(query, tuple(params))
+            hosts = cur.fetchall()
+            return hosts
     except HTTPException:
         raise
     except Exception as e:
