@@ -77,7 +77,13 @@ def run_httpx(hostnames: list[str], timeout: int = 60) -> list[dict]:
         try:
             data = json.loads(line)
             hostname = data.get("input") or data.get("host") or ""
-            ip = data.get("host") or ""
+            
+            # Extract IP: Based on httpx JSON schema, the resolved IPs are usually in the 'a' array (A records).
+            # Some versions might provide an 'ip' string field. 
+            # We check both. Note: this requires manual verification on the Kali VM since we cannot run it locally.
+            a_records = data.get("a", [])
+            ip = data.get("ip") or (a_records[0] if isinstance(a_records, list) and a_records else "")
+            
             status_code = data.get("status_code")
             title = data.get("title", "")
             tech = data.get("tech", [])

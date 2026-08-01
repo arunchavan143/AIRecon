@@ -103,6 +103,8 @@ python3 recon.py
 - Configured Python's `subprocess` to call `httpx-toolkit -silent -json -tech-detect -status-code -title` and passed the input list of hostnames via `stdin`.
 - Processed each output line as JSON, safely handling potential `JSONDecodeError`s with warnings.
 - Extracted relevant fields (hostname, IP, status code, title, tech, server) into a structured dictionary for each successful result.
+- **Bug Fix:** Addressed an issue where the `ip` field was incorrectly populated with the hostname. Based on research of the `httpx` JSON schema, the resolved IPs are output in an array under the `a` key (A records), or sometimes as an `ip` string field depending on flags and version. The code now checks both.
+  - *Note: This fix requires manual verification on the Kali VM since we cannot run it locally to confirm the exact schema.*
 - Added rigorous error handling analogous to `run_subfinder`, raising `RuntimeError`s for missing binaries, timeouts, and non-zero exit codes.
 - Updated the standalone test block to chain `run_subfinder` and `run_httpx` together.
 
