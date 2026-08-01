@@ -98,8 +98,9 @@ python3 recon.py
 # Sprint 5: Httpx Wrapper Walkthrough
 
 ## 1. What was built
-- Implemented `run_httpx(hostnames, timeout)` in `backend/recon.py` to act as a Python wrapper around the external `httpx` binary.
-- Configured Python's `subprocess` to call `httpx -silent -json -tech-detect -status-code -title` and passed the input list of hostnames via `stdin`.
+- Implemented `run_httpx(hostnames, timeout)` in `backend/recon.py` to act as a Python wrapper around the external `httpx-toolkit` binary.
+  - *Note: We use `httpx-toolkit` instead of stock `httpx` to avoid binary name collisions with the Python `httpx` library on the target Kali system.*
+- Configured Python's `subprocess` to call `httpx-toolkit -silent -json -tech-detect -status-code -title` and passed the input list of hostnames via `stdin`.
 - Processed each output line as JSON, safely handling potential `JSONDecodeError`s with warnings.
 - Extracted relevant fields (hostname, IP, status code, title, tech, server) into a structured dictionary for each successful result.
 - Added rigorous error handling analogous to `run_subfinder`, raising `RuntimeError`s for missing binaries, timeouts, and non-zero exit codes.

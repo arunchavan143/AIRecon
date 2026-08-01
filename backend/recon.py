@@ -37,19 +37,19 @@ def run_subfinder(domain: str, timeout: int = 60) -> list[str]:
 
 def run_httpx(hostnames: list[str], timeout: int = 60) -> list[dict]:
     """
-    Takes a list of hostnames (e.g. output of run_subfinder), pipes them into httpx,
+    Takes a list of hostnames (e.g. output of run_subfinder), pipes them into httpx-toolkit,
     and returns structured results.
-    Uses: httpx -silent -json -tech-detect -status-code -title
-    Input is piped via stdin (echo hostnames joined by newlines into httpx's stdin),
+    Uses: httpx-toolkit -silent -json -tech-detect -status-code -title
+    Input is piped via stdin (echo hostnames joined by newlines into httpx-toolkit's stdin),
     not passed as CLI args.
     """
     if not hostnames:
         return []
 
-    cmd = ["httpx", "-silent", "-json", "-tech-detect", "-status-code", "-title"]
+    cmd = ["httpx-toolkit", "-silent", "-json", "-tech-detect", "-status-code", "-title"]
     
-    if not shutil.which("httpx"):
-        raise RuntimeError("httpx not found - ensure it's installed and on PATH")
+    if not shutil.which("httpx-toolkit"):
+        raise RuntimeError("httpx-toolkit not found - ensure it's installed and on PATH")
         
     input_data = "\n".join(hostnames)
     
@@ -62,12 +62,12 @@ def run_httpx(hostnames: list[str], timeout: int = 60) -> list[dict]:
             timeout=timeout
         )
     except FileNotFoundError:
-        raise RuntimeError("httpx not found - ensure it's installed and on PATH")
+        raise RuntimeError("httpx-toolkit not found - ensure it's installed and on PATH")
     except subprocess.TimeoutExpired:
-        raise RuntimeError(f"httpx command timed out after {timeout} seconds")
+        raise RuntimeError(f"httpx-toolkit command timed out after {timeout} seconds")
         
     if result.returncode != 0:
-        raise RuntimeError(f"httpx failed with exit code {result.returncode}. Stderr: {result.stderr}")
+        raise RuntimeError(f"httpx-toolkit failed with exit code {result.returncode}. Stderr: {result.stderr}")
         
     results = []
     for line in result.stdout.splitlines():
@@ -93,7 +93,7 @@ def run_httpx(hostnames: list[str], timeout: int = 60) -> list[dict]:
             }
             results.append(clean_result)
         except json.JSONDecodeError:
-            logging.warning(f"Failed to parse httpx output line as JSON: {line}")
+            logging.warning(f"Failed to parse httpx-toolkit output line as JSON: {line}")
             
     return results
 
@@ -105,9 +105,9 @@ if __name__ == "__main__":
         for r in subdomains[:10]:
             print(r)
             
-        print("\nRunning httpx on discovered subdomains...")
+        print("\nRunning httpx-toolkit on discovered subdomains...")
         results = run_httpx(subdomains)
-        print(f"Httpx found {len(results)} active endpoints. Here are the first 5:")
+        print(f"Httpx-toolkit found {len(results)} active endpoints. Here are the first 5:")
         for res in results[:5]:
             print(res)
     except Exception as e:
