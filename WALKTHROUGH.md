@@ -151,6 +151,7 @@ python3 -m recon.pipeline
   - Calls `run_full_pipeline` to orchestrate recon tools synchronously.
   - Upserts discovered host data into the `hosts` table matching by `(target_id, hostname)`. It updates existing hosts by refreshing their details and `last_seen` timestamp, or inserts newly found hosts.
   - Captures `RuntimeError` from the pipeline tools (e.g. missing tools) and maps them to clean `HTTP 500` error responses to prevent application crashes.
+- **Bug Fix/Enhancement:** Increased the default scan timeout passed to the recon pipeline tools from 60 seconds to 180 seconds to better accommodate chaining `subfinder` and `httpx-toolkit` on larger targets. This is configurable via the `TIMEOUT` environment variable.
 - Added `GET /targets/{target_id}/hosts` to `main.py` to list discovered hosts, featuring optional query filters for `alive` status and `tech` stack (using PostgreSQL's `ANY()` array matching).
 
 ## 2. API Endpoints and `curl` Commands
