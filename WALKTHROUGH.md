@@ -117,3 +117,25 @@ python3 recon.py
 ## 3. Verification Note
 > [!IMPORTANT]
 > This has not been executed - verification must happen on the Kali VM.
+
+---
+
+# Sprint 6: Modular Recon Package Refactoring
+
+## 1. What was built
+- Refactored `backend/recon.py` into a modular `backend/recon/` package structure to allow easy extensibility for future recon tools. No existing logic or error handling was changed.
+- Created `base.py` containing abstract base classes `SubdomainTool` and `HTTPProbeTool` to enforce a standard interface across tools.
+- Moved `run_subfinder()` into its own `subfinder.py` file, wrapping it in the `Subfinder` class inheriting from `SubdomainTool`.
+- Moved `run_httpx()` into its own `httpx_toolkit.py` file, wrapping it in the `HttpxToolkit` class inheriting from `HTTPProbeTool`.
+- Added a `pipeline.py` orchestrator script that ties the tools together in sequence.
+- Deleted the old monolithic `backend/recon.py` file to prevent confusion.
+
+## 2. Command to Test Standalone
+```bash
+cd backend
+python3 -m recon.pipeline
+```
+
+## 3. Verification Note
+> [!IMPORTANT]
+> This has not been executed - verification must happen on the Kali VM.
