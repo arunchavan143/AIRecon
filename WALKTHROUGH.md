@@ -68,3 +68,45 @@ curl -X POST "http://127.0.0.1:8000/projects/999/targets" \
 - **Uniqueness / Integrity:** The `domain` field on `targets` doesn't have a unique constraint, meaning the same domain could be added multiple times to a project.
 - **Input Validation:** Pydantic is checking that strings are passed, but there's no regex validation for checking if the target domain is properly formatted (e.g. ensuring it has no `http://` prefix for a raw domain).
 - **Date Handling:** `added_at` and `created_at` are provided by Postgres `now()`. The returned JSON timestamps omit timezone information depending on database configuration.
+
+---
+
+# Sprint 4: Subfinder Wrapper Walkthrough
+
+## 1. What was built
+- Implemented `run_subfinder(domain, timeout)` in `backend/recon.py` to act as a Python wrapper around the external `subfinder` binary.
+- Used Python's `subprocess` to call `subfinder -d <domain> -silent`.
+- Captured `stdout`, handled empty lines, and returned a cleanly stripped list of domains.
+- Added strict error handling that throws a clear `RuntimeError` on:
+  - Missing `subfinder` binary (`FileNotFoundError`)
+  - Command timeout (`TimeoutExpired`)
+  - Non-zero exit codes (capturing and logging `stderr`).
+- Added a standalone test block at the bottom of the script for `python3 recon.py`.
+
+## 2. Command to Test Standalone
+```bash
+cd backend
+python recon.py
+```
+
+## 3. Real Output Example (against hackerone.com)
+```text
+Running subfinder test on hackerone.com...
+Found 17 subdomains. Here are the first 10:
+mta-sts.managed.hackerone.com
+www.hackerone.com
+mta-sts.forwarding.hackerone.com
+mta-sts.hackerone.com
+websockets.hackerone.com
+hackerone.com
+a.ns.hackerone.com
+b.ns.hackerone.com
+events.hackerone.com
+gslink.hackerone.com
+```
+
+## 4. Error Cases and Testing
+- **Binary Missing:** Tested by renaming `subfinder.exe` to `subfinder.exe.bak` and running the script.
+  - *Resulting Error:* `Error: subfinder not found - ensure it's installed and on PATH`
+- **Non-Zero Exit / stderr Logging:** Handled by validating `result.returncode != 0`. The script captures `stderr` and displays it in the `RuntimeError`.
+- **Timeouts:** Simulated logic using `subprocess.run(timeout=60)`. If the subfinder command exceeds the specified timeout (default 60s), a `subprocess.TimeoutExpired` exception is caught, and a `RuntimeError` stating the exact timeout is raised.
