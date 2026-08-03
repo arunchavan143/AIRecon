@@ -212,3 +212,16 @@ curl -X GET "http://127.0.0.1:8000/targets/1/hosts?alive=true&tech=Nginx"
 ## 2. Verification Note
 > [!IMPORTANT]
 > This timeout fix has not been executed locally and its effectiveness on real targets requires manual verification on the Kali VM.
+
+---
+
+# Sprint 6 (Part 4): Subfinder Output Sanitization
+
+## 1. What was built
+- Added stricter output sanitization in `Subfinder.run()` to defensively catch and clean markdown link syntax (e.g. `[www.hackerone.com](https://www.hackerone.com)`) that was appearing in the subfinder output.
+- Added a basic hostname validation check (regex matching alphanumeric characters, dots, and hyphens) to reject and log any lines that don't match, ensuring only clean hostnames enter the pipeline.
+- **Why:** Malformed output was observed but the root cause (terminal artifacts, subfinder version quirks, etc.) couldn't be determined locally.
+
+## 2. Verification Note
+> [!IMPORTANT]
+> This fix is defensive/preventive since the raw malformed output could not be directly observed locally. Real verification requires re-running a scan on the Kali VM and confirming the hostnames come back clean.

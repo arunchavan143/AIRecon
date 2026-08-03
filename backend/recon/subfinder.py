@@ -1,5 +1,7 @@
 import subprocess
 import shutil
+import re
+import logging
 from .base import SubdomainTool
 
 class Subfinder(SubdomainTool):
@@ -31,6 +33,25 @@ class Subfinder(SubdomainTool):
             raise RuntimeError(f"subfinder failed with exit code {result.returncode}. Stderr: {result.stderr}")
             
         lines = result.stdout.splitlines()
-        subdomains = [line.strip() for line in lines if line.strip()]
+        subdomains = []
+        
+        md_link_pattern = re.compile(r'^\[(.*?)\]\(.*?\)$')
+        valid_hostname_pattern = re.compile(r'^[a-zA-Z0-9.-]+$')
+        
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+                
+            # Defensively strip markdown link syntax if present
+            match = md_link_pattern.match(line)
+            if match:
+                line = match.group(1).strip()
+                
+            # Validate basic hostname pattern
+            if valid_hostname_pattern.match(line):
+                subdomains.append(line)
+            else:
+                logging.warning(f"Subfinder produced malformed/invalid hostname, skipping: {line}")
         
         return subdomains
