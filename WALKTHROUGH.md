@@ -313,3 +313,22 @@ You can then access the UI at **http://192.168.126.128:5173** from any machine o
 ## 2. Verification Note
 > [!IMPORTANT]
 > This code has not been rendered locally. Please test the new route, clickable rows, table rendering, and client-side filtering on the Kali VM.
+
+---
+
+# Sprint 10: v1 Hardening & Documentation
+
+## 1. What was built
+This sprint focused exclusively on polish, error resilience, and getting the codebase ready for a v1.0 tag:
+- **Error States Audit:** Across `Projects.jsx`, `Targets.jsx`, and `Hosts.jsx`, `fetch` catch blocks were updated to explicitly handle `Failed to fetch` errors, presenting the user with a clear `BACKEND_UNREACHABLE` message rather than a generic network error.
+- **Empty States Audit:** Confirmed and refined empty states across all views, ensuring the `Hosts` view provides a clear call-to-action (`RUN_A_SCAN_FROM_THE_TARGETS_PAGE`) when a target has no hosts yet.
+- **Loading States Audit:** Ensured all views correctly display their `[ LOADING... ]` text on initial mount.
+- **Data Quirks Documentation:** Added an explicit inline code comment in `Hosts.jsx` documenting that non-2xx status codes (like 404) are intentionally mapped to `alive: true`, since the host successfully answered the HTTP request.
+- **Input Validation:** 
+  - Added checks to prevent empty/whitespace-only project and target submissions.
+  - Added a defensive regex in `Targets.jsx` to automatically strip accidental `http://` or `https://` prefixes from user input before hitting the backend API.
+- **v1 Documentation:** Rewrote the root repository `README.md` to be a comprehensive "Getting Started" guide covering prerequisites, environment setup, database initialization, server execution, and the typical user workflow.
+
+## 2. Verification Note
+> [!IMPORTANT]
+> The v1.0 tag will be applied directly on the Kali VM by the user after visually verifying these frontend resilience improvements.
