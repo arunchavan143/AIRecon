@@ -253,3 +253,20 @@ You can then access the UI at **http://192.168.126.128:5173** from any machine o
 ## 3. Verification Note
 > [!IMPORTANT]
 > This has not been executed - verification must happen on the Kali VM since npm and the browser cannot be run/viewed in the local Dev environment.
+
+---
+
+# Sprint 7 (Part 2): CORS & UI Redesign
+
+## 1. What was built
+- **CORS Fix:** Added `CORSMiddleware` to the FastAPI backend (`main.py`) to allow cross-origin requests from the frontend dev server (`0.0.0.0`). This directly resolves the `Access-Control-Allow-Origin` errors observed in the browser console.
+- **Cyberpunk UI Redesign:** Re-styled the frontend to match a terminal/SOC-dashboard aesthetic.
+  - Added a global stylesheet (`frontend/src/index.css`) establishing a dark theme (`#0a0e14` background), electric green (`#00ff9d`) accent color, and monospaced typography for data/headers.
+  - Redesigned `Projects.jsx` to utilize subtle bordered panels, inline alert boxes with a red-accent left border for errors, and a custom `LOADING_PROJECTS...` pulse animation instead of generic spinners.
+  - Project lists are now cleanly formatted in a data table style, and empty states feel intentional.
+  - Avoided heavy UI component libraries, relying on pure, lightweight CSS.
+
+## 2. Verification Note
+> [!IMPORTANT]
+> - The CORS fix should immediately resolve backend connectivity issues.
+> - The new UI restyle needs visual verification via screenshot or local testing on the Kali VM, as rendering and layout cannot be observed from this environment.

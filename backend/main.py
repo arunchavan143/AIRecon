@@ -6,7 +6,17 @@ from db import get_connection
 from models import ProjectCreate, ProjectOut, TargetCreate, TargetOut, HostOut, ScanSummary
 from recon.pipeline import run_full_pipeline
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # dev only - fine for now, single-user local tool
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/health")
 def health():

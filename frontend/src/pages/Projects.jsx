@@ -42,53 +42,62 @@ export default function Projects() {
   }
 
   return (
-    <div style={{ padding: '20px', fontFamily: 'sans-serif' }}>
-      <h1>AIRecon Projects</h1>
+    <div style={{ maxWidth: '1000px', margin: '0 auto', padding: '40px 20px' }}>
+      <h1 style={{ borderBottom: '1px solid var(--accent-transparent)', paddingBottom: '10px', marginBottom: '30px' }}>
+        [&gt;] AI_RECON::PROJECTS
+      </h1>
       
       {error && (
-        <div style={{ color: 'red', marginBottom: '20px', padding: '10px', border: '1px solid red' }}>
-          <strong>Error:</strong> {error}
+        <div className="alert-error">
+          <span>[ERR]</span> {error}
         </div>
       )}
 
-      <form onSubmit={handleCreate} style={{ marginBottom: '30px' }}>
-        <input
-          type="text"
-          value={newProjectName}
-          onChange={(e) => setNewProjectName(e.target.value)}
-          placeholder="New project name..."
-          disabled={isCreating}
-          style={{ padding: '8px', marginRight: '10px' }}
-        />
-        <button type="submit" disabled={isCreating || !newProjectName.trim()} style={{ padding: '8px' }}>
-          {isCreating ? 'Creating...' : 'Create Project'}
-        </button>
-      </form>
+      <div className="panel" style={{ marginBottom: '30px' }}>
+        <form onSubmit={handleCreate} style={{ display: 'flex', gap: '15px' }}>
+          <input
+            type="text"
+            value={newProjectName}
+            onChange={(e) => setNewProjectName(e.target.value)}
+            placeholder="ENTER_NEW_PROJECT_NAME"
+            disabled={isCreating}
+            style={{ flex: 1 }}
+          />
+          <button type="submit" disabled={isCreating || !newProjectName.trim()}>
+            {isCreating ? 'INITIALIZING...' : 'INITIALIZE'}
+          </button>
+        </form>
+      </div>
 
-      {loading && projects.length === 0 ? (
-        <p>Loading projects...</p>
-      ) : projects.length === 0 ? (
-        <p>No projects found. Create one above!</p>
-      ) : (
-        <table style={{ width: '100%', textAlign: 'left', borderCollapse: 'collapse' }}>
-          <thead>
-            <tr style={{ borderBottom: '2px solid #ccc' }}>
-              <th style={{ padding: '10px 0' }}>ID</th>
-              <th>Name</th>
-              <th>Created At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {projects.map(p => (
-              <tr key={p.id} style={{ borderBottom: '1px solid #eee' }}>
-                <td style={{ padding: '10px 0' }}>{p.id}</td>
-                <td>{p.name}</td>
-                <td>{new Date(p.created_at).toLocaleString()}</td>
+      <div className="panel">
+        {loading && projects.length === 0 ? (
+          <div className="loading-text">[ LOADING_PROJECTS... ]</div>
+        ) : projects.length === 0 ? (
+          <div className="empty-state">
+            [ NO_PROJECTS_FOUND ]<br/>
+            AWAITING_INITIALIZATION
+          </div>
+        ) : (
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th style={{ width: '80px' }}>ID</th>
+                <th>PROJECT_NAME</th>
+                <th style={{ width: '250px' }}>CREATED_AT</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+            </thead>
+            <tbody>
+              {projects.map(p => (
+                <tr key={p.id}>
+                  <td>#{p.id}</td>
+                  <td style={{ color: 'var(--accent-color)' }}>{p.name}</td>
+                  <td>{new Date(p.created_at).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }
