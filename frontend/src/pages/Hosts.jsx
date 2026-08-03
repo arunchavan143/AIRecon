@@ -28,7 +28,9 @@ export default function Hosts() {
       const data = await getHosts(targetId);
       setHosts(data);
     } catch (err) {
-      setError(err.message);
+      setError(err.message === 'Failed to fetch' 
+        ? 'BACKEND_UNREACHABLE - check that the API server is running' 
+        : err.message);
     } finally {
       setLoading(false);
     }
@@ -165,6 +167,7 @@ export default function Hosts() {
                     </td>
                     <td style={{ fontSize: '0.9em' }}>{h.server || '-'}</td>
                     <td>
+                      {/* Intentional: alive means the host responded, regardless of HTTP status code */}
                       {h.alive ? (
                         <span style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>● YES</span>
                       ) : (

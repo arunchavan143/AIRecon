@@ -31,7 +31,9 @@ export default function Targets() {
       const data = await getTargets(projectId);
       setTargets(data);
     } catch (err) {
-      setError(err.message);
+      setError(err.message === 'Failed to fetch' 
+        ? 'BACKEND_UNREACHABLE - check that the API server is running' 
+        : err.message);
     } finally {
       setLoading(false);
     }
@@ -39,15 +41,19 @@ export default function Targets() {
 
   async function handleCreate(e) {
     e.preventDefault();
-    if (!newDomain.trim()) return;
+    let cleanDomain = newDomain.trim();
+    if (!cleanDomain) return;
+    cleanDomain = cleanDomain.replace(/^https?:\/\//i, '');
 
     setIsCreating(true);
     try {
-      await createTarget(projectId, newDomain);
+      await createTarget(projectId, cleanDomain);
       setNewDomain('');
       await fetchTargets();
     } catch (err) {
-      setError(err.message);
+      setError(err.message === 'Failed to fetch' 
+        ? 'BACKEND_UNREACHABLE - check that the API server is running' 
+        : err.message);
     } finally {
       setIsCreating(false);
     }
@@ -68,9 +74,12 @@ export default function Targets() {
         [targetId]: { success: true, data: summary }
       }));
     } catch (err) {
+      const errMsg = err.message === 'Failed to fetch' 
+        ? 'BACKEND_UNREACHABLE' 
+        : err.message;
       setScanResults(prev => ({
         ...prev,
-        [targetId]: { success: false, error: err.message }
+        [targetId]: { success: false, error: errMsg }
       }));
     } finally {
       setScanningTargets(prev => ({ ...prev, [targetId]: false }));

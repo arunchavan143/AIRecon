@@ -21,7 +21,9 @@ export default function Projects() {
       const data = await getProjects();
       setProjects(data);
     } catch (err) {
-      setError(err.message);
+      setError(err.message === 'Failed to fetch' 
+        ? 'BACKEND_UNREACHABLE - check that the API server is running' 
+        : err.message);
     } finally {
       setLoading(false);
     }
@@ -37,7 +39,9 @@ export default function Projects() {
       setNewProjectName('');
       await fetchProjects();
     } catch (err) {
-      setError(err.message);
+      setError(err.message === 'Failed to fetch' 
+        ? 'BACKEND_UNREACHABLE - check that the API server is running' 
+        : err.message);
     } finally {
       setIsCreating(false);
     }
