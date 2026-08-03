@@ -225,3 +225,31 @@ curl -X GET "http://127.0.0.1:8000/targets/1/hosts?alive=true&tech=Nginx"
 ## 2. Verification Note
 > [!IMPORTANT]
 > This fix is defensive/preventive since the raw malformed output could not be directly observed locally. Real verification requires re-running a scan on the Kali VM and confirming the hostnames come back clean.
+
+---
+
+# Sprint 7: Frontend Scaffold & Projects Screen
+
+## 1. What was built
+- Initialized a new React frontend using `create-vite` in the `frontend/` directory (JavaScript, no TypeScript).
+- Configured `frontend/vite.config.js` to bind to `0.0.0.0` so the Vite development server is accessible from other machines on the network.
+- Created an API wrapper (`frontend/src/api.js`) that defines standard `fetch` calls mapped to all existing backend endpoints (Projects, Targets, Scan, and Hosts). It is temporarily hardcoded to point to the Kali VM IP `http://192.168.126.128:8000`.
+- Built the `Projects` page (`frontend/src/pages/Projects.jsx`) which:
+  - Fetches and renders a list of projects from the backend on load, including their IDs, Names, and Creation timestamps.
+  - Contains a form to create a new project, automatically refreshing the project list upon success.
+  - Features robust loading and error states (e.g. gracefully handling an unreachable backend).
+- Configured `App.jsx` to render the `Projects` page by default.
+- Added a `README.md` in `frontend/` providing clear instructions on how to start the frontend server.
+
+## 2. Command to Run Frontend
+Execute the following commands on the Kali VM to start the frontend:
+```bash
+cd frontend
+npm install
+npm run dev
+```
+You can then access the UI at **http://192.168.126.128:5173** from any machine on the network.
+
+## 3. Verification Note
+> [!IMPORTANT]
+> This has not been executed - verification must happen on the Kali VM since npm and the browser cannot be run/viewed in the local Dev environment.
