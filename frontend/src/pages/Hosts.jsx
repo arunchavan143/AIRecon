@@ -36,6 +36,34 @@ export default function Hosts() {
     }
   }
 
+  const [crawlingHosts, setCrawlingHosts] = useState({});
+  const [crawlResults, setCrawlResults] = useState({});
+
+  async function handleCrawl(hostId) {
+    setCrawlingHosts(prev => ({ ...prev, [hostId]: true }));
+    setCrawlResults(prev => ({ ...prev, [hostId]: null }));
+    
+    try {
+      // Import the crawlHost function dynamically or rely on the static import we will add at the top
+      const { crawlHost } = await import('../api.js');
+      const data = await crawlHost(hostId);
+      setCrawlResults(prev => ({
+        ...prev,
+        [hostId]: { success: true, count: data.urls_found }
+      }));
+    } catch (err) {
+      const errMsg = err.message === 'Failed to fetch' 
+        ? 'BACKEND_UNREACHABLE' 
+        : err.message;
+      setCrawlResults(prev => ({
+        ...prev,
+        [hostId]: { success: false, error: errMsg }
+      }));
+    } finally {
+      setCrawlingHosts(prev => ({ ...prev, [hostId]: false }));
+    }
+  }
+
   const filteredHosts = hosts.filter(h => {
     if (aliveOnly && !h.alive) return false;
     if (techFilter.trim()) {
@@ -125,57 +153,86 @@ export default function Hosts() {
                   <th>TECH_STACK</th>
                   <th>SERVER</th>
                   <th>ALIVE</th>
+                  <th>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
-                {filteredHosts.map(h => (
-                  <tr key={h.id}>
-                    <td style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>{h.hostname}</td>
-                    <td style={{ fontFamily: 'var(--font-mono)' }}>{h.ip || '-'}</td>
-                    <td>
-                      {h.status_code ? (
-                        <span style={{ 
-                          color: h.status_code >= 200 && h.status_code < 400 ? 'var(--accent-color)' : 
-                                 h.status_code >= 400 ? 'var(--error-color)' : 'var(--text-main)'
-                        }}>
-                          {h.status_code}
-                        </span>
-                      ) : '-'}
-                    </td>
-                    <td style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={h.title}>
-                      {h.title || '-'}
-                    </td>
-                    <td>
-                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                        {h.tech_stack && h.tech_stack.length > 0 ? h.tech_stack.map(tech => (
-                          <span 
-                            key={tech}
-                            style={{ 
-                              fontSize: '0.75em', 
-                              padding: '2px 6px', 
-                              backgroundColor: 'var(--accent-transparent)', 
-                              border: '1px solid var(--accent-transparent)',
-                              borderRadius: '3px',
-                              color: 'var(--text-main)',
-                              whiteSpace: 'nowrap'
-                            }}
-                          >
-                            {tech}
+                {filteredHosts.map(h => {
+                  const isCrawling = crawlingHosts[h.id];
+                  const result = crawlResults[h.id];
+                  
+                  return (
+                    <tr key={h.id}>
+                      <td style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>{h.hostname}</td>
+                      <td style={{ fontFamily: 'var(--font-mono)' }}>{h.ip || '-'}</td>
+                      <td>
+                        {h.status_code ? (
+                          <span style={{ 
+                            color: h.status_code >= 200 && h.status_code < 400 ? 'var(--accent-color)' : 
+                                   h.status_code >= 400 ? 'var(--error-color)' : 'var(--text-main)'
+                          }}>
+                            {h.status_code}
                           </span>
-                        )) : '-'}
-                      </div>
-                    </td>
-                    <td style={{ fontSize: '0.9em' }}>{h.server || '-'}</td>
-                    <td>
-                      {/* Intentional: alive means the host responded, regardless of HTTP status code */}
-                      {h.alive ? (
-                        <span style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>● YES</span>
-                      ) : (
-                        <span style={{ color: 'var(--text-muted)' }}>○ NO</span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                        ) : '-'}
+                      </td>
+                      <td style={{ maxWidth: '200px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={h.title}>
+                        {h.title || '-'}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+                          {h.tech_stack && h.tech_stack.length > 0 ? h.tech_stack.map(tech => (
+                            <span 
+                              key={tech}
+                              style={{ 
+                                fontSize: '0.75em', 
+                                padding: '2px 6px', 
+                                backgroundColor: 'var(--accent-transparent)', 
+                                border: '1px solid var(--accent-transparent)',
+                                borderRadius: '3px',
+                                color: 'var(--text-main)',
+                                whiteSpace: 'nowrap'
+                              }}
+                            >
+                              {tech}
+                            </span>
+                          )) : '-'}
+                        </div>
+                      </td>
+                      <td style={{ fontSize: '0.9em' }}>{h.server || '-'}</td>
+                      <td>
+                        {/* Intentional: alive means the host responded, regardless of HTTP status code */}
+                        {h.alive ? (
+                          <span style={{ color: 'var(--accent-color)', fontWeight: 'bold' }}>● YES</span>
+                        ) : (
+                          <span style={{ color: 'var(--text-muted)' }}>○ NO</span>
+                        )}
+                      </td>
+                      <td>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                          <button 
+                            onClick={() => handleCrawl(h.id)} 
+                            disabled={isCrawling || !h.alive}
+                            style={{ width: 'fit-content' }}
+                          >
+                            {isCrawling ? 'CRAWLING...' : 'CRAWL'}
+                          </button>
+
+                          {/* Inline status reporting */}
+                          {result && result.success && (
+                            <div style={{ fontSize: '0.8em', color: 'var(--accent-color)' }}>
+                              [FOUND] {result.count} urls
+                            </div>
+                          )}
+                          {result && !result.success && (
+                            <div className="alert-error" style={{ margin: 0, padding: '6px', fontSize: '0.8em' }}>
+                              [ERR] {result.error}
+                            </div>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
             {filteredHosts.length === 0 && hosts.length > 0 && (

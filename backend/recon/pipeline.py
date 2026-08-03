@@ -14,10 +14,18 @@ def run_full_pipeline(domain: str) -> dict:
     hosts = HttpxToolkit().run(subdomains, timeout=timeout)
     
     alive_hostnames = [h["hostname"] for h in hosts if h.get("alive", True) or h.get("status_code")]
-    if not alive_hostnames:
-        alive_hostnames = subdomains  # fallback just in case
-        
-    urls = Katana().run(alive_hostnames, timeout=timeout)
+    
+    # Only automatically crawl the root domain and www (if alive) to save time.
+    # We allow manual crawling of other specific hosts later.
+    target_root = domain.lower()
+    target_www = "www." + target_root
+    
+    root_hostnames = [h for h in alive_hostnames if h == target_root or h == target_www]
+    
+    if not root_hostnames:
+        urls = []
+    else:
+        urls = Katana().run(root_hostnames, timeout=timeout)
     
     return {"hosts": hosts, "urls": urls}
 

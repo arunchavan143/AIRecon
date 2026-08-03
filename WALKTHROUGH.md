@@ -346,3 +346,13 @@ Added robust integration for ProjectDiscovery's `katana` to allow discovery of U
   - Safely extracts the domain/netloc from each discovered URL using `urllib.parse.urlparse`.
   - Reconciles and maps each discovered URL back to its original input hostname using an `O(1)` case-insensitive set lookup.
   - Explicitly logs and skips malformed output or URLs that do not belong to the initial scan scope.
+
+---
+
+# Sprint 12: Targeted Crawling (Opt-in deep scans)
+
+## 1. What was built
+Changed the default Katana behavior to prevent excessive auto-crawling on massive targets.
+- **Pipeline Optimization:** `pipeline.py` now specifically identifies the root domain and `www.` host for the target, passing *only* those to Katana automatically during the initial `RUN_RECON` pipeline.
+- **Manual Crawl Endpoint:** Added `POST /hosts/{host_id}/crawl` in `main.py` allowing manual, targeted execution of Katana against any single resolved host.
+- **Frontend Crawl UI:** Added a `CRAWL` action button to every row in `Hosts.jsx`. It replicates the polling and inline error/success reporting UI established by the `RUN_RECON` button, displaying `[FOUND] X urls` upon a successful targeted deep-crawl.

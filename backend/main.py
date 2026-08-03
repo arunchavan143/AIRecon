@@ -212,6 +212,48 @@ def list_hosts(target_id: int, alive: bool = None, tech: str = None):
     finally:
         conn.close()
 
+import os
+@app.post("/hosts/{host_id}/crawl")
+def crawl_host(host_id: int):
+    conn = get_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT target_id, hostname FROM hosts WHERE id = %s;", (host_id,))
+            host = cur.fetchone()
+            if not host:
+                raise HTTPException(status_code=404, detail="Host not found")
+            
+            target_id = host['target_id']
+            hostname = host['hostname']
+            
+            from recon.katana import Katana
+            timeout = int(os.environ.get("TIMEOUT", 180))
+            
+            try:
+                urls = Katana().run([hostname], timeout=timeout)
+            except RuntimeError as e:
+                raise HTTPException(status_code=500, detail=str(e))
+                
+            for u in urls:
+                # We can do an upsert or just insert if we don't care about duplicates
+                # Just insert for simplicity, matching the scan logic
+                cur.execute(
+                    "INSERT INTO urls (target_id, hostname, url, discovered_at) VALUES (%s, %s, %s, now());",
+                    (target_id, u["hostname"], u["url"])
+                )
+                
+            conn.commit()
+            return {
+                "host_id": host_id,
+                "urls_found": len(urls)
+            }
+    except HTTPException:
+        raise
+    except Exception as e:
+        conn.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
 @app.get("/targets/{target_id}/urls", response_model=List[UrlOut])
 def list_urls(target_id: int):
     conn = get_connection()

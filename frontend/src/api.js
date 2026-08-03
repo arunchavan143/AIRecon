@@ -48,3 +48,14 @@ export async function getHosts(targetId) {
   if (!res.ok) throw new Error(`Failed to fetch hosts: ${res.statusText}`);
   return res.json();
 }
+
+export async function crawlHost(hostId) {
+  const res = await fetch(`${API_BASE}/hosts/${hostId}/crawl`, {
+    method: 'POST'
+  });
+  if (!res.ok) {
+    const errorData = await res.json().catch(() => ({}));
+    throw new Error(errorData.detail || `Failed to crawl host: ${res.statusText}`);
+  }
+  return res.json();
+}
