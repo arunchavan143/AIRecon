@@ -151,7 +151,6 @@ python3 -m recon.pipeline
   - Calls `run_full_pipeline` to orchestrate recon tools synchronously.
   - Upserts discovered host data into the `hosts` table matching by `(target_id, hostname)`. It updates existing hosts by refreshing their details and `last_seen` timestamp, or inserts newly found hosts.
   - Captures `RuntimeError` from the pipeline tools (e.g. missing tools) and maps them to clean `HTTP 500` error responses to prevent application crashes.
-- **Bug Fix/Enhancement:** Increased the default scan timeout passed to the recon pipeline tools from 60 seconds to 180 seconds to better accommodate chaining `subfinder` and `httpx-toolkit` on larger targets. This is configurable via the `TIMEOUT` environment variable.
 - Added `GET /targets/{target_id}/hosts` to `main.py` to list discovered hosts, featuring optional query filters for `alive` status and `tech` stack (using PostgreSQL's `ANY()` array matching).
 
 ## 2. API Endpoints and `curl` Commands
@@ -200,3 +199,16 @@ curl -X GET "http://127.0.0.1:8000/targets/1/hosts?alive=true&tech=Nginx"
 ## 3. Verification Note
 > [!IMPORTANT]
 > This has not been executed - verification must happen on the Kali VM.
+
+---
+
+# Sprint 6 (Part 3): Timeout Fix
+
+## 1. What was built
+- Increased the default scan timeout passed to `run_full_pipeline` (and the underlying `subfinder` and `httpx-toolkit` calls) from 60 seconds to 180 seconds.
+- Made the timeout fully configurable via the `TIMEOUT` environment variable in `backend/recon/pipeline.py`.
+- **Why:** The combined execution of subfinder and httpx-toolkit on larger targets can easily exceed 60 seconds. Upping the limit prevents the pipeline from aborting prematurely.
+
+## 2. Verification Note
+> [!IMPORTANT]
+> This timeout fix has not been executed locally and its effectiveness on real targets requires manual verification on the Kali VM.
