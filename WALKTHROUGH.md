@@ -270,3 +270,24 @@ You can then access the UI at **http://192.168.126.128:5173** from any machine o
 > [!IMPORTANT]
 > - The CORS fix should immediately resolve backend connectivity issues.
 > - The new UI restyle needs visual verification via screenshot or local testing on the Kali VM, as rendering and layout cannot be observed from this environment.
+
+---
+
+# Sprint 8: Targets Screen & Routing
+
+## 1. What was built
+- **React Router Integration:** Added `react-router-dom` to the project and wrapped the application in a `BrowserRouter` inside `App.jsx`.
+- **Project Navigation:** Made the project rows in `Projects.jsx` clickable. Clicking a project navigates the user to its specific targets view (`/projects/:projectId/targets`), passing the project name via router state.
+- **Targets Page (`Targets.jsx`):** 
+  - Fetches and displays a table of all targets associated with the selected project.
+  - Maintains the established cyberpunk/SOC-dashboard aesthetic.
+  - Includes a "BACK_TO_PROJECTS" breadcrumb for easy navigation.
+  - Includes a form to easily add new target domains.
+- **Scan Trigger Integration:** Added a "RUN_RECON" button for each target row.
+  - Clicking this button hits the `POST /targets/:targetId/scan` endpoint.
+  - Since scans are synchronous and block for up to 180 seconds, built per-row state tracking so only the targeted row transitions to a `SCANNING...` state, disabling its button.
+  - Handles the results gracefully inline, either rendering a success summary (`[SUCCESS] Found:45 (New:40 Upd:5)`) or displaying the established inline red alert box if the scan tool errors out or times out.
+
+## 2. Verification Note
+> [!IMPORTANT]
+> This has not been executed locally. Visual rendering, routing behaviors, and the long-polling scan states must be verified via testing on the Kali VM.

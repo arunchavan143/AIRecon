@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { getProjects, createProject } from '../api';
 
 export default function Projects() {
+  const navigate = useNavigate();
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -88,7 +90,12 @@ export default function Projects() {
             </thead>
             <tbody>
               {projects.map(p => (
-                <tr key={p.id}>
+                <tr 
+                  key={p.id} 
+                  onClick={() => navigate(`/projects/${p.id}/targets`, { state: { projectName: p.name } })}
+                  style={{ cursor: 'pointer' }}
+                  title="VIEW_TARGETS"
+                >
                   <td>#{p.id}</td>
                   <td style={{ color: 'var(--accent-color)' }}>{p.name}</td>
                   <td>{new Date(p.created_at).toLocaleString()}</td>
