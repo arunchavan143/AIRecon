@@ -139,14 +139,19 @@ export default function Targets() {
                 const result = scanResults[t.id];
 
                 return (
-                  <tr key={t.id}>
+                  <tr 
+                    key={t.id} 
+                    onClick={() => navigate(`/targets/${t.id}/hosts`, { state: { targetDomain: t.domain, projectId, projectName } })}
+                    style={{ cursor: 'pointer' }}
+                    title="VIEW_HOSTS"
+                  >
                     <td>#{t.id}</td>
                     <td style={{ color: 'var(--accent-color)' }}>{t.domain}</td>
                     <td>{new Date(t.added_at).toLocaleString()}</td>
                     <td>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
                         <button 
-                          onClick={() => handleScan(t.id)} 
+                          onClick={(e) => { e.stopPropagation(); handleScan(t.id); }} 
                           disabled={isScanning}
                           style={{ width: 'fit-content' }}
                         >

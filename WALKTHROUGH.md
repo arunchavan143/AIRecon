@@ -291,3 +291,25 @@ You can then access the UI at **http://192.168.126.128:5173** from any machine o
 ## 2. Verification Note
 > [!IMPORTANT]
 > This has not been executed locally. Visual rendering, routing behaviors, and the long-polling scan states must be verified via testing on the Kali VM.
+
+---
+
+# Sprint 9: Hosts Table & Filtering
+
+## 1. What was built
+- **New Route:** Added `/targets/:targetId/hosts` mapping to `<Hosts />` in `App.jsx`.
+- **Target Navigation:** Target rows in `Targets.jsx` are now clickable, navigating directly to the new Hosts page while safely ignoring clicks on the "RUN_RECON" button.
+- **Hosts Page (`Hosts.jsx`):**
+  - Fetches and renders all hosts discovered for a given target.
+  - **Aesthetic Match:** Strictly follows the established cyberpunk UI (dark background, monospace text, electric green accents, bordered panels).
+  - **Data Presentation:** 
+    - Tech stack items render as individual stylized chips/tags.
+    - Status codes are color-coded (green for 2xx/3xx, red for 4xx/5xx).
+    - Alive status renders with a distinct colored indicator.
+    - Long page titles clip gracefully.
+  - **Client-Side Filtering:** Implemented an "Alive only" toggle and a case-insensitive tech stack filter box to quickly search for specific technologies (e.g. "nginx", "php").
+  - **State Handling:** Includes cohesive loading, error, and empty states.
+
+## 2. Verification Note
+> [!IMPORTANT]
+> This code has not been rendered locally. Please test the new route, clickable rows, table rendering, and client-side filtering on the Kali VM.
