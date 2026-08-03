@@ -11,3 +11,9 @@ class HTTPProbeTool(ABC):
     @abstractmethod
     def run(self, hostnames: list[str], timeout: int = 60) -> list[dict]:
         ...
+
+class URLDiscoveryTool(ABC):
+    """Any tool that takes hostnames and returns discovered URLs."""
+    @abstractmethod
+    def run(self, hostnames: list[str], timeout: int = 120) -> list[dict]:
+        ...

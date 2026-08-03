@@ -332,3 +332,17 @@ This sprint focused exclusively on polish, error resilience, and getting the cod
 ## 2. Verification Note
 > [!IMPORTANT]
 > The v1.0 tag will be applied directly on the Kali VM by the user after visually verifying these frontend resilience improvements.
+
+---
+
+# Sprint 11: URL Discovery Tooling (Katana)
+
+## 1. What was built
+Added robust integration for ProjectDiscovery's `katana` to allow discovery of URLs from resolved hostnames.
+- **Base Class Addition:** Extended `backend/recon/base.py` with an abstract `URLDiscoveryTool` class enforcing the standard `run(hostnames, timeout)` contract.
+- **Katana Wrapper (`katana.py`):**
+  - Defensively checks for `katana` in system `PATH` and handles execution timeouts/errors gracefully (returning structured `RuntimeError`s).
+  - Uses the `katana -silent -jc -d 2` command (JS crawling, depth 2) via stdin piping.
+  - Safely extracts the domain/netloc from each discovered URL using `urllib.parse.urlparse`.
+  - Reconciles and maps each discovered URL back to its original input hostname using an `O(1)` case-insensitive set lookup.
+  - Explicitly logs and skips malformed output or URLs that do not belong to the initial scan scope.
