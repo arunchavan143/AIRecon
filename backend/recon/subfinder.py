@@ -3,6 +3,7 @@ import shutil
 import re
 import logging
 from .base import SubdomainTool
+from .sanitize import clean_hostname
 
 class Subfinder(SubdomainTool):
     def run(self, domain: str, timeout: int = 60) -> list[str]:
@@ -35,23 +36,11 @@ class Subfinder(SubdomainTool):
         lines = result.stdout.splitlines()
         subdomains = []
         
-        md_link_pattern = re.compile(r'^\[(.*?)\]\(.*?\)$')
-        valid_hostname_pattern = re.compile(r'^[a-zA-Z0-9.-]+$')
-        
         for line in lines:
-            line = line.strip()
-            if not line:
-                continue
-                
-            # Defensively strip markdown link syntax if present
-            match = md_link_pattern.match(line)
-            if match:
-                line = match.group(1).strip()
-                
-            # Validate basic hostname pattern
-            if valid_hostname_pattern.match(line):
-                subdomains.append(line)
+            cleaned = clean_hostname(line)
+            if cleaned:
+                subdomains.append(cleaned)
             else:
-                logging.warning(f"Subfinder produced malformed/invalid hostname, skipping: {line}")
+                logging.warning(f"Subfinder produced malformed/invalid hostname, skipping: {line.strip()}")
         
         return subdomains

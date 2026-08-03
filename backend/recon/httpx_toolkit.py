@@ -3,6 +3,7 @@ import shutil
 import json
 import logging
 from .base import HTTPProbeTool
+from .sanitize import clean_hostname
 
 class HttpxToolkit(HTTPProbeTool):
     def run(self, hostnames: list[str], timeout: int = 60) -> list[dict]:
@@ -46,7 +47,12 @@ class HttpxToolkit(HTTPProbeTool):
                 continue
             try:
                 data = json.loads(line)
-                hostname = data.get("input") or data.get("host") or ""
+                raw_hostname = data.get("input") or data.get("host") or ""
+                hostname = clean_hostname(raw_hostname)
+                
+                if not hostname:
+                    logging.warning(f"HttpxToolkit produced malformed/invalid hostname, skipping: {raw_hostname}")
+                    continue
                 
                 # Extract IP: Based on httpx JSON schema, the resolved IPs are usually in the 'a' array (A records).
                 # Some versions might provide an 'ip' string field. 
