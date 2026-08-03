@@ -3,7 +3,7 @@ from typing import List
 from psycopg2.extras import RealDictCursor
 
 from db import get_connection
-from models import ProjectCreate, ProjectOut, TargetCreate, TargetOut, HostOut, ScanSummary
+from models import ProjectCreate, ProjectOut, TargetCreate, TargetOut, HostOut, ScanSummary, UrlOut
 from recon.pipeline import run_full_pipeline
 
 from fastapi.middleware.cors import CORSMiddleware
@@ -115,15 +115,17 @@ def run_scan(target_id: int):
             # Run the recon pipeline
             try:
                 results = run_full_pipeline(domain)
+                hosts = results["hosts"]
+                urls = results["urls"]
             except RuntimeError as e:
                 raise HTTPException(status_code=500, detail=str(e))
                 
-            hosts_found = len(results)
+            hosts_found = len(hosts)
             hosts_new = 0
             hosts_updated = 0
             
             # Upsert into hosts table
-            for res in results:
+            for res in hosts:
                 # PostgreSQL doesn't have arrays in standard %s syntax without adaptation,
                 # but psycopg2 handles Python lists gracefully when passed as %s
                 cur.execute(
@@ -152,12 +154,22 @@ def run_scan(target_id: int):
                     )
                     hosts_new += 1
                     
+            # Insert into urls table (we can just ignore duplicates for now or use ON CONFLICT if we added a unique constraint, 
+            # but since we didn't add a unique constraint in schema.sql, we'll just insert or delete existing)
+            cur.execute("DELETE FROM urls WHERE target_id = %s;", (target_id,))
+            for u in urls:
+                cur.execute(
+                    "INSERT INTO urls (target_id, hostname, url, discovered_at) VALUES (%s, %s, %s, now());",
+                    (target_id, u["hostname"], u["url"])
+                )
+                
             conn.commit()
             return {
                 "target_id": target_id,
                 "hosts_found": hosts_found,
                 "hosts_new": hosts_new,
-                "hosts_updated": hosts_updated
+                "hosts_updated": hosts_updated,
+                "urls_found": len(urls)
             }
             
     except HTTPException:
@@ -193,6 +205,28 @@ def list_hosts(target_id: int, alive: bool = None, tech: str = None):
             cur.execute(query, tuple(params))
             hosts = cur.fetchall()
             return hosts
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        conn.close()
+
+@app.get("/targets/{target_id}/urls", response_model=List[UrlOut])
+def list_urls(target_id: int):
+    conn = get_connection()
+    try:
+        with conn.cursor(cursor_factory=RealDictCursor) as cur:
+            cur.execute("SELECT id FROM targets WHERE id = %s;", (target_id,))
+            if cur.fetchone() is None:
+                raise HTTPException(status_code=404, detail="Target not found")
+            
+            cur.execute(
+                "SELECT id, target_id, hostname, url, discovered_at FROM urls WHERE target_id = %s ORDER BY id;",
+                (target_id,)
+            )
+            urls = cur.fetchall()
+            return urls
     except HTTPException:
         raise
     except Exception as e:

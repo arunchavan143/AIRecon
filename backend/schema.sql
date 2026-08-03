@@ -24,3 +24,11 @@ CREATE TABLE hosts (
     first_seen TIMESTAMP DEFAULT now(),
     last_seen TIMESTAMP DEFAULT now()
 );
+
+CREATE TABLE urls (
+    id SERIAL PRIMARY KEY,
+    target_id INT REFERENCES targets(id),
+    hostname TEXT NOT NULL,
+    url TEXT NOT NULL,
+    discovered_at TIMESTAMP DEFAULT now()
+);

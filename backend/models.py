@@ -31,8 +31,16 @@ class HostOut(BaseModel):
     first_seen: datetime
     last_seen: datetime
 
+class UrlOut(BaseModel):
+    id: int
+    target_id: int
+    hostname: str
+    url: str
+    discovered_at: datetime
+
 class ScanSummary(BaseModel):
     target_id: int
     hosts_found: int
     hosts_new: int
     hosts_updated: int
+    urls_found: int
