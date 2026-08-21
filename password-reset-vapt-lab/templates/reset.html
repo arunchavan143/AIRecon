@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="auth-card wide">
+  <span class="eyebrow">Step 2</span>
+  <h1>Reset password</h1>
+  <p class="muted">The same form exposes normal HTTP parameters for Burp Repeater and request comparison.</p>
+  {% if error %}<div class="flash error">{{ error }}</div>{% endif %}
+  <form method="post" class="form-grid">
+    <input type="hidden" name="mode" value="{{ mode }}">
+    <label for="token">Reset token</label>
+    <input id="token" name="token" value="{{ token or '' }}" autocomplete="off">
+    <label for="username">Username or user ID <span class="muted">(used for binding tests)</span></label>
+    <input id="username" name="username" autocomplete="off" placeholder="alice or 1">
+    <label for="new_password">New password</label>
+    <input id="new_password" name="new_password" type="password" autocomplete="new-password" required>
+    <label for="confirm_password">Confirm new password</label>
+    <input id="confirm_password" name="confirm_password" type="password" autocomplete="new-password" required>
+    <button class="button primary" type="submit">Reset password</button>
+  </form>
+  {% if response_leak %}<div class="callout danger"><strong>Intentional response exposure:</strong> <code>{{ response_leak }}</code></div>{% endif %}
+  {% if referer_leak %}<img class="tracking-pixel" src="{{ url_for('tracking_pixel', mode=mode) }}" alt="">{% endif %}
+</section>
+{% endblock %}

@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="auth-card">
+  <span class="eyebrow">Local-only registration</span>
+  <h1>Register synthetic account</h1>
+  <p class="muted">Registration is restricted to the <code>@test.local</code> namespace.</p>
+  <form method="post" class="form-grid">
+    <input type="hidden" name="mode" value="{{ mode }}">
+    <label for="username">Username</label>
+    <input id="username" name="username" required>
+    <label for="email">Synthetic email</label>
+    <input id="email" name="email" type="email" placeholder="tester@test.local" required>
+    <label for="password">Password</label>
+    <input id="password" name="password" type="password" required>
+    <p class="help">Minimum 12 characters and at least three character classes.</p>
+    <button class="button primary" type="submit">Create account</button>
+  </form>
+</section>
+{% endblock %}

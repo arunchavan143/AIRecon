@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-heading">
+  <span class="eyebrow">Local side channel</span>
+  <h1>Mail inbox</h1>
+  <p class="lede">Synthetic reset messages are stored locally. If MailHog is running, the same message is also sent to its API.</p>
+</section>
+{% for email in emails %}
+<article class="mail-card">
+  <div class="mail-meta"><strong>{{ email['subject'] }}</strong><span>{{ email['created_at'] }}</span></div>
+  <div class="mail-to">To: <code>{{ email['to_email'] }}</code></div>
+  <pre>{{ email['body'] }}</pre>
+</article>
+{% else %}
+<section class="card"><p>No local messages yet. Submit the Forgot Password form first.</p></section>
+{% endfor %}
+{% endblock %}

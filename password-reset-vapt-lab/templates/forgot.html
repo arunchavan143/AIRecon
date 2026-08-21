@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="auth-card">
+  <span class="eyebrow">Step 1</span>
+  <h1>Forgot password</h1>
+  <p class="muted">Enter a synthetic email, username, or user ID. The local inbox receives the reset message.</p>
+  <form method="post" class="form-grid">
+    <input type="hidden" name="mode" value="{{ mode }}">
+    <label for="identifier">Account identifier</label>
+    <input id="identifier" name="identifier" autocomplete="username" required>
+    <button class="button primary" type="submit">Send reset message</button>
+  </form>
+  <div class="callout"><strong>Testing note:</strong> Submit a known account and an unknown account, then compare the response and timing in Burp.</div>
+</section>
+{% endblock %}

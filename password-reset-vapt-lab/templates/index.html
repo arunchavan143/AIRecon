@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="hero">
+  <div>
+    <p class="eyebrow">Authorized local security testing</p>
+    <h1>Password-reset security VAPT lab</h1>
+    <p class="lede">A small synthetic web application for testing reset-token lifecycle, account binding, password policy, session invalidation, and controlled token exposure.</p>
+    <div class="actions">
+      <a class="button primary" href="{{ mode_url('login', active_mode) }}">Open sign-in</a>
+      <a class="button secondary" href="{{ mode_url('forgot_password', active_mode) }}">Start reset flow</a>
+    </div>
+  </div>
+  <aside class="hero-note">
+    <span class="eyebrow">Current scenario</span>
+    <h2>{{ active_mode_info.label }}</h2>
+    <p>{{ active_mode_info.description }}</p>
+  </aside>
+</section>
+<section class="section-grid">
+  <article class="card">
+    <span class="eyebrow">Synthetic accounts</span>
+    <h2>Only local identities</h2>
+    <p>Use Alice, Bob, and Admin accounts under <code>@test.local</code>. The application does not contact real email services or external authentication providers.</p>
+  </article>
+  <article class="card">
+    <span class="eyebrow">Local evidence</span>
+    <h2>Mail, events, sessions</h2>
+    <p>Inspect reset messages at <a href="{{ mode_url('mail', active_mode) }}">Local mail</a>, security events at <a href="{{ mode_url('events', active_mode) }}">Events</a>, and server-side session identifiers on the account page.</p>
+  </article>
+  <article class="card">
+    <span class="eyebrow">Burp-ready</span>
+    <h2>Normal HTTP requests</h2>
+    <p>Use the forms and <code>/api/reset</code> with Proxy, Repeater, Intruder, request comparison, cookies, and parameter manipulation.</p>
+  </article>
+</section>
+<section class="callout warning"><strong>Safety boundary:</strong> Run this lab on localhost with synthetic accounts only. Do not connect it to production data, real credentials, or external targets.</section>
+{% endblock %}

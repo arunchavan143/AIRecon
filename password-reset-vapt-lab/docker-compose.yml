@@ -1,0 +1,25 @@
+services:
+  mailhog:
+    image: mailhog/mailhog:v1.0.1
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+    profiles:
+      - mailhog
+
+  lab:
+    build: .
+    environment:
+      DATABASE_PATH: /app/data/lab.sqlite3
+      RESET_TOKEN_TTL_SECONDS: 60
+      RATE_LIMIT_PER_HOUR: 5
+      LAB_BASE_URL: http://127.0.0.1:5000
+      MAILHOG_API_URL: http://mailhog:8025/api/v2/messages
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - mailhog
+    profiles:
+      - mailhog

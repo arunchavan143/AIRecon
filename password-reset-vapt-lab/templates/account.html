@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-heading">
+  <span class="eyebrow">Authenticated synthetic account</span>
+  <h1>Account</h1>
+  <p class="lede">{{ user['username'] }} · {{ user['email'] }}</p>
+</section>
+<section class="section-grid two">
+  <article class="card">
+    <span class="eyebrow">Current session</span>
+    <h2>Server-side session</h2>
+    <dl class="details">
+      <dt>Session record ID</dt><dd>{{ user['server_session_id'] }}</dd>
+      <dt>Cookie hash prefix</dt><dd><code>{{ session_cookie_hash }}</code></dd>
+      <dt>Session created</dt><dd>{{ user['session_created_at'] }}</dd>
+      <dt>Session version</dt><dd>{{ user['session_version'] }}</dd>
+    </dl>
+    <a class="button secondary" href="{{ mode_url('change_password', mode) }}">Change password</a>
+  </article>
+  <article class="card">
+    <span class="eyebrow">Reset-token lifecycle</span>
+    <h2>Recent tokens</h2>
+    <p class="help">Only token hashes and metadata are stored. Raw tokens are delivered through the local mail inbox.</p>
+    <div class="table-wrap"><table><thead><tr><th>ID</th><th>Created</th><th>Expires</th><th>Used</th><th>Revoked</th></tr></thead><tbody>
+      {% for token in tokens %}<tr><td>{{ token['id'] }}</td><td>{{ token['created_at'] }}</td><td>{{ token['expires_at'] }}</td><td>{{ token['used_at'] or '—' }}</td><td>{{ token['revoked_at'] or '—' }}</td></tr>{% else %}<tr><td colspan="5">No reset tokens yet.</td></tr>{% endfor %}
+    </tbody></table></div>
+  </article>
+</section>
+<section class="card">
+  <span class="eyebrow">Session lifecycle</span>
+  <h2>Recent sessions</h2>
+  <div class="table-wrap"><table><thead><tr><th>ID</th><th>Created</th><th>Expires</th><th>Revoked</th><th>Version</th></tr></thead><tbody>
+    {% for item in sessions %}<tr><td>{{ item['id'] }}</td><td>{{ item['created_at'] }}</td><td>{{ item['expires_at'] }}</td><td>{{ item['revoked_at'] or 'active' }}</td><td>{{ item['session_version'] }}</td></tr>{% else %}<tr><td colspan="5">No sessions yet.</td></tr>{% endfor %}
+  </tbody></table></div>
+</section>
+{% endblock %}

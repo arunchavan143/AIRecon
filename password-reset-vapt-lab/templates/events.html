@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="page-heading">
+  <span class="eyebrow">Evidence collection</span>
+  <h1>Security events</h1>
+  <p class="lede">Secure-mode events do not contain raw reset tokens or passwords. The debug-leak scenario is intentionally explicit.</p>
+</section>
+<section class="card table-card"><div class="table-wrap"><table><thead><tr><th>Time</th><th>Event</th><th>User</th><th>Token</th><th>Details</th></tr></thead><tbody>
+{% for event in events %}
+<tr><td>{{ event['created_at'] }}</td><td><code>{{ event['event_type'] }}</code></td><td>{{ event['user_id'] or '—' }}</td><td>{{ event['token_id'] or '—' }}</td><td><pre class="inline-json">{{ event['details'] }}</pre></td></tr>
+{% else %}<tr><td colspan="5">No events yet.</td></tr>{% endfor %}
+</tbody></table></div></section>
+{% endblock %}

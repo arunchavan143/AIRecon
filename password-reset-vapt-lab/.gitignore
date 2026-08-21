@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+.env
+.venv/
+data/*.sqlite3
+data/*.sqlite3-*
+logs/
+*.log
+.pytest_cache/
+.DS_Store
+!data/.gitkeep

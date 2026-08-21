@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{ title }} · ResetLab</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <div class="shell nav-row">
+      <a class="brand" href="{{ mode_url('index', active_mode) }}">ResetLab</a>
+      <nav aria-label="Primary navigation">
+        <a href="{{ mode_url('login', active_mode) }}">Sign in</a>
+        <a href="{{ mode_url('forgot_password', active_mode) }}">Forgot password</a>
+        <a href="{{ mode_url('mail', active_mode) }}">Local mail</a>
+        <a href="{{ mode_url('events', active_mode) }}">Events</a>
+        {% if current_user %}
+          <a href="{{ mode_url('account', active_mode) }}">Account</a>
+          <a href="{{ mode_url('logout', active_mode) }}">Log out</a>
+        {% endif %}
+      </nav>
+    </div>
+  </header>
+  <main class="shell">
+    <div class="mode-bar">
+      <div>
+        <span class="eyebrow">Active lab scenario</span>
+        <strong>{{ active_mode_info.label }}</strong>
+      </div>
+      <form method="get" class="mode-form">
+        <label for="mode">Scenario</label>
+        <select id="mode" name="mode" onchange="this.form.submit()">
+          {% for key, info in modes.items() %}
+            <option value="{{ key }}" {% if key == active_mode %}selected{% endif %}>{{ info.label }}</option>
+          {% endfor %}
+        </select>
+      </form>
+    </div>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <section class="flash-stack" aria-live="polite">
+          {% for category, message in messages %}
+            <div class="flash {{ category }}">{{ message }}</div>
+          {% endfor %}
+        </section>
+      {% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="shell footer">
+    <span>Local synthetic training lab only.</span>
+    <span>Mode: {{ active_mode }}</span>
+  </footer>
+</body>
+</html>
